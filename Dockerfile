@@ -8,6 +8,6 @@ RUN npm install -g forever bower gulp babel
 RUN mkdir -p /var/www/current && mkdir -p /var/www/current/node_modules
 COPY src /var/www/current
 COPY node_modules /var/www/current/node_modules
-COPY ./docker/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 3000
-CMD "/usr/bin/supervisord"
+CMD ["/usr/bin/supervisord"]
