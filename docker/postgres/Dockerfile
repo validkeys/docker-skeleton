@@ -1,10 +1,7 @@
-FROM postgres
-RUN apt-get update -y && apt-get install -y wget build-essential
-RUN apt-get install -y supervisor
-RUN mkdir -p /var/log/supervisor
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+FROM postgres:9.4
+ENV DB_NAME database
+ENV DB_USER admin
+ENV DB_PASS password
 ADD make_db.sh /docker-entrypoint-initdb.d/
-VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
-EXPOSE 5432
-CMD ["/usr/lib/supervisord"]
-# CMD ["/usr/lib/postgresql/9.4/bin/postgres", "-D", "/var/lib/postgresql/9.4/main", "-c", "config_file=/etc/postgresql/9.4/main/postgresql.conf"]
+RUN chmod 755 /docker-entrypoint-initdb.d/make_db.sh
+CMD ["echo", "hello"]
