@@ -7,15 +7,14 @@ var mongoAdapter = require('sails-mongo');
 // var postgresAdapter = require('sails-postgresql');
 var ormConfig = {
   adapters: {
-    // postgresql: {
-    //   database: "presslyprod",
-    //   host:     "localhost",
-    //   port:     5432
-    // }
+    mongo: mongoAdapter
+  },
+  connections: {
     mongo: {
+      adapter:  "mongo",
       database: "pressly-mongo",
       host:     process.env.MONGO_PORT_27017_TCP_ADDR || '127.0.0.1',
-      port:     process.env.MONGO_PORT_27017_TCP_PORT || '127.0.0.1',
+      port:     process.env.MONGO_PORT_27017_TCP_PORT || 27017,
     }
   }
 }
@@ -57,7 +56,7 @@ queue.process('say', function(job, done) {
 var MongoModel = Waterline.Collection.extend({
   schema:     false,
   tableName:  "users",
-  adapter:    "mongo",
+  connection:    "mongo",
   attributes: {
     id:                 { 
       type:       "objectid",
@@ -83,8 +82,7 @@ server.route([
      path:   "/",
      handler: function(req, reply) {
         var myToken = redisClient.get("amiworking", function(err, res) {
-          // reply({ myToken: res, yes: "hello!"});
-          MongoModel.find()
+          req.server.app.models.collections.users.find()
             .then(function (mongoRes) {
               reply({ myToken: res, yes: "hello!", users: mongoRes });
             });
@@ -93,14 +91,16 @@ server.route([
   }
 ]);
 
-// orm.initialize(ormConfig, function(err, models) {
-//   if (err){ throw err; }
-// });
+orm.initialize(ormConfig, function(err, models) {
+  if (err){ throw err; }
 
-server.start(function() {
-  console.log("Server running at " + server.info.uri);
+  server.app.models = models;
 
-  setTimeout(function() {
-    queue.create('say', { txt: "Hello from Kue!" }).save();
-  }, 5000);
+  server.start(function() {
+    console.log("Server running at " + server.info.uri);
+
+    setTimeout(function() {
+      queue.create('say', { txt: "Hello from Kue!" }).save();
+    }, 5000);
+  });
 });
