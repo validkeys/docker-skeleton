@@ -2,17 +2,23 @@ var Hapi    = require('hapi');
 var server  = new Hapi.Server();
 var Waterline = require('waterline');
 
-// var orm = new Waterline();
+var orm = new Waterline();
+var mongoAdapter = require('sails-mongo');
 // var postgresAdapter = require('sails-postgresql');
-// var ormConfig = {
-//   adapters: {
-//     postgresql: {
-//       database: "presslyprod",
-//       host:     "localhost",
-//       port:     5432
-//     }
-//   }
-// }
+var ormConfig = {
+  adapters: {
+    // postgresql: {
+    //   database: "presslyprod",
+    //   host:     "localhost",
+    //   port:     5432
+    // }
+    mongo: {
+      database: "pressly-mongo",
+      host:     process.env.MONGO_PORT_27017_TCP_ADDR || '127.0.0.1',
+      port:     process.env.MONGO_PORT_27017_TCP_PORT || '127.0.0.1',
+    }
+  }
+}
 
 var redisPort = process.env.REDIS_PORT_6379_TCP_PORT || 6379;
 var redisHost = process.env.REDIS_PORT_6379_TCP_ADDR || '127.0.0.1';
@@ -48,6 +54,22 @@ queue.process('say', function(job, done) {
 //   }
 // });
 
+var MongoModel = Waterline.Collection.extend({
+  schema:     false,
+  tableName:  "users",
+  adapter:    "mongo",
+  attributes: {
+    id:                 { 
+      type:       "objectid",
+      required:   true,
+      index:      true,
+      primaryKey: true
+    },
+    name: { type: "string" }
+  }
+});
+
+orm.loadCollection(MongoModel);
 // orm.loadCollection(User);
 
 
@@ -61,11 +83,11 @@ server.route([
      path:   "/",
      handler: function(req, reply) {
         var myToken = redisClient.get("amiworking", function(err, res) {
-          reply({ myToken: res, yes: "hello!"});
-          // User.find()
-          //   .then(function (res) {
-          //     reply({ myToken: res, yes: "hello!", users: res });
-          //   });
+          // reply({ myToken: res, yes: "hello!"});
+          MongoModel.find()
+            .then(function (mongoRes) {
+              reply({ myToken: res, yes: "hello!", users: mongoRes });
+            });
         });
      }
   }
