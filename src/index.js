@@ -17,16 +17,15 @@ var ormConfig = {
       database: "pressly-mongo",
       host:     process.env.MONGO_PORT_27017_TCP_ADDR || '127.0.0.1',
       port:     process.env.MONGO_PORT_27017_TCP_PORT || 27017,
+      migrate: "safe"
     },
     postgres: {
       adapter: "postgres",
       database: "presslydb",
       host:     process.env.POSTGRES_PORT_5432_TCP_ADDR || '127.0.0.1',
       port:     process.env.POSTGRES_PORT_5432_TCP_PORT || 5432,
-      user: "postgres"
-    },
-    {
-       defaults: { migrate: 'safe' }
+      user: "postgres",
+      migrate: "safe"
     }
   }
 }
