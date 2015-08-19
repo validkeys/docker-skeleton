@@ -91,14 +91,15 @@ server.route([
      method: "GET",
      path:   "/",
      handler: function(req, reply) {
-        var myToken = redisClient.get("amiworking", function(err, res) {
+        redisClient.get("amiworking", function(err, res) {
           Promise.props({
             redis: res,
             mongo: server.app.models.collections.mongousers.find(),
             postgres: server.app.models.collections.pgusers.find()
           }).then(function(data) {
             reply(data);
-          })
+          });
+        });
      }
   }
 ]);
