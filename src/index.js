@@ -61,7 +61,9 @@ var PostgresModel = Waterline.Collection.extend({
   identity:   "pgusers",
   connection: 'postgres',
   attributes: {
-    name: { type: "string" }
+    name: { type: "string" },
+    createdAt: {type: "date"},
+    updatedAt: {type: "date"}
   }
 });
 
