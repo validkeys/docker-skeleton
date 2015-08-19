@@ -84,7 +84,7 @@ orm.loadCollection(PostgresModel);
 
 
 server.connection({
-  port: 3000
+  port: process.env.PORT || 3000
 });
 
 server.route([
@@ -94,6 +94,7 @@ server.route([
      handler: function(req, reply) {
         redisClient.get("amiworking", function(err, res) {
           Promise.props({
+            server: server.info.id,
             redis: res,
             mongo: server.app.models.collections.mongousers.find(),
             postgres: server.app.models.collections.pgusers.find()
