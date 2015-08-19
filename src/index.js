@@ -1,13 +1,15 @@
 var Hapi    = require('hapi');
 var server  = new Hapi.Server();
 var Waterline = require('waterline');
+var Promise   = require('bluebird');
 
 var orm = new Waterline();
 var mongoAdapter = require('sails-mongo');
-// var postgresAdapter = require('sails-postgresql');
+var postgresAdapter = require('sails-postgresql');
 var ormConfig = {
   adapters: {
-    mongo: mongoAdapter
+    mongo:    mongoAdapter,
+    postgres: postgresAdapter
   },
   connections: {
     mongo: {
@@ -15,6 +17,12 @@ var ormConfig = {
       database: "pressly-mongo",
       host:     process.env.MONGO_PORT_27017_TCP_ADDR || '127.0.0.1',
       port:     process.env.MONGO_PORT_27017_TCP_PORT || 27017,
+    },
+    postgres: {
+      adapter: "postgres",
+      database: "dockertest",
+      host:     process.env.POSTGRES_PORT_27017_TCP_ADDR || '127.0.0.1',
+      port:     process.env.POSTGRES_PORT_27017_TCP_PORT || 5432,
     }
   }
 }
@@ -44,18 +52,20 @@ queue.process('say', function(job, done) {
   done();
 });
 
-// var User = Waterline.Collection.extend({
-//   schema: true,
-//   tableName: "accounts",
-//   adapter: 'postgresql',
-//   attributes: {
-//     username: { type: "string" }
-//   }
-// });
+var PostgresModel = Waterline.Collection.extend({
+  schema:     true,
+  tableName:  "users",
+  identity:   "pgusers",
+  connection: 'postgres',
+  attributes: {
+    name: { type: "string" }
+  }
+});
 
 var MongoModel = Waterline.Collection.extend({
   schema:     false,
   tableName:  "users",
+  identity:   "mongousers",
   connection:    "mongo",
   attributes: {
     id:                 { 
@@ -69,7 +79,7 @@ var MongoModel = Waterline.Collection.extend({
 });
 
 orm.loadCollection(MongoModel);
-// orm.loadCollection(User);
+orm.loadCollection(PostgresModel);
 
 
 server.connection({
@@ -82,11 +92,13 @@ server.route([
      path:   "/",
      handler: function(req, reply) {
         var myToken = redisClient.get("amiworking", function(err, res) {
-          req.server.app.models.collections.users.find()
-            .then(function (mongoRes) {
-              reply({ myToken: res, yes: "hello!", users: mongoRes });
-            });
-        });
+          Promise.props({
+            redis: res,
+            mongo: server.app.models.collections.mongousers.find(),
+            postgres: server.app.models.collections.pgusers.find()
+          }).then(function(data) {
+            reply(data);
+          })
      }
   }
 ]);

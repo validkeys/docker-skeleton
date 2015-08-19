@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^2.9.34",
     "hapi": "^9.0.1",
     "kue": "^0.9.4",
     "redis": "^0.12.1",
