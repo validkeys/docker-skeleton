@@ -21,7 +21,7 @@ var ormConfig = {
     },
     postgres: {
       adapter: "postgres",
-      database: "presslydb",
+      database: "dockertest",
       host:     process.env.POSTGRES_PORT_5432_TCP_ADDR || '127.0.0.1',
       port:     process.env.POSTGRES_PORT_5432_TCP_PORT || 5432,
       user: "postgres",
@@ -60,6 +60,7 @@ var PostgresModel = Waterline.Collection.extend({
   tableName:  "users",
   identity:   "pgusers",
   connection: 'postgres',
+  migrate:    'safe',
   attributes: {
     name: { type: "string" },
     createdAt: {type: "date"},
@@ -72,6 +73,7 @@ var MongoModel = Waterline.Collection.extend({
   tableName:  "users",
   identity:   "mongousers",
   connection:    "mongo",
+  migrate:    'safe',
   attributes: {
     id:                 { 
       type:       "objectid",
