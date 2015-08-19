@@ -21,7 +21,7 @@ var ormConfig = {
     },
     postgres: {
       adapter: "postgres",
-      database: "dockertest",
+      database: "presslydb",
       host:     process.env.POSTGRES_PORT_5432_TCP_ADDR || '127.0.0.1',
       port:     process.env.POSTGRES_PORT_5432_TCP_PORT || 5432,
       user: "postgres",
